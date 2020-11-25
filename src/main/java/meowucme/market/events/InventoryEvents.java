@@ -22,6 +22,10 @@ import static meowucme.market.Market.eco;
 public class InventoryEvents implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
+        if(event != null) {
+            return;
+        }
+
         Inventory clicked = event.getInventory();
         InventoryHolder holder = clicked.getHolder();
         if(holder instanceof Market) {
