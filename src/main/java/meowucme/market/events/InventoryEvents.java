@@ -22,7 +22,7 @@ import static meowucme.market.Market.eco;
 public class InventoryEvents implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        Inventory clicked = event.getClickedInventory();
+        Inventory clicked = event.getInventory();
         InventoryHolder holder = clicked.getHolder();
         if(holder instanceof Market) {
             event.setCancelled(true);
@@ -42,6 +42,8 @@ public class InventoryEvents implements Listener {
             Location location = player.getLocation();
 
             ItemStack currentItem = event.getCurrentItem();
+            ItemStack trueItem = market.getTrueItem(slot);
+
             if(currentItem == null) {
                 return;
             }
@@ -64,7 +66,7 @@ public class InventoryEvents implements Listener {
                         player.sendMessage(ChatColor.GREEN + "Purchased " + currentItem.getI18NDisplayName() + ChatColor.RESET + (ChatColor.GREEN + " for $" + cost));
                         player.playSound(location, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 2);
 
-                        for (ItemStack itemStack : player.getInventory().addItem(market.getTrueItem(slot)).values()) {
+                        for (ItemStack itemStack : player.getInventory().addItem(trueItem).values()) {
                             world.dropItem(location, itemStack);
                         }
 
@@ -81,17 +83,24 @@ public class InventoryEvents implements Listener {
                     player.playSound(location, Sound.ENTITY_ENDERMAN_TELEPORT, SoundCategory.AMBIENT, 1, 1);
                     market.execute(slot, new MarketAction.Context(MarketAction.MarketEvent.sell, MarketAction.SuccessState.not_allowed, player, market, slot));
                 } else {
-                    if(player.getInventory().contains(currentItem)) {
-                        player.getInventory().remove(currentItem);
-                        eco.depositPlayer(player, sell);
-                        player.sendMessage(ChatColor.GREEN + "Sold " + currentItem.getI18NDisplayName() + ChatColor.RESET + (ChatColor.GREEN + " for $" + sell));
-                        market.execute(slot, new MarketAction.Context(MarketAction.MarketEvent.sell, MarketAction.SuccessState.success, player, market, slot));
-                        player.playSound(location, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 2);
-                    } else {
-                        player.sendMessage(ChatColor.RED + "You do not have enough of this item to sell.");
-                        player.playSound(location, Sound.ENTITY_ENDERMAN_TELEPORT, SoundCategory.AMBIENT, 1, 1);
-                        market.execute(slot, new MarketAction.Context(MarketAction.MarketEvent.sell, MarketAction.SuccessState.fail, player, market, slot));
+                    for(ItemStack item : player.getInventory().getContents()) {
+                        /*if(
+                                trueItem.getType() == item.getType() &&
+                                trueItem.getAmount() >= item.getAmount() &&
+                                trueItem.getItemMeta().equals(item.getItemMeta())
+                        ) */{
+                            player.getInventory().remove(currentItem);
+                            eco.depositPlayer(player, sell);
+                            player.sendMessage(ChatColor.GREEN + "Sold " + currentItem.getI18NDisplayName() + ChatColor.RESET + (ChatColor.GREEN + " for $" + sell));
+                            market.execute(slot, new MarketAction.Context(MarketAction.MarketEvent.sell, MarketAction.SuccessState.success, player, market, slot));
+                            player.playSound(location, Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.AMBIENT, 1, 2);
+                            return;
+                        }
                     }
+
+                    player.sendMessage(ChatColor.RED + "You do not have enough of this item to sell.");
+                    player.playSound(location, Sound.ENTITY_ENDERMAN_TELEPORT, SoundCategory.AMBIENT, 1, 1);
+                    market.execute(slot, new MarketAction.Context(MarketAction.MarketEvent.sell, MarketAction.SuccessState.fail, player, market, slot));
                 }
             }
         }

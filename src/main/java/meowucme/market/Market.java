@@ -17,12 +17,11 @@ public final class Market extends JavaPlugin {
     public static Economy eco;
 
     private static List<JavaPlugin> disable = new ArrayList<>();
-    private static boolean hasEconomy = true;
     private static boolean hasChecked = false;
 
     public static void disableUnlessEconomy(JavaPlugin plugin) {
         if(hasChecked) {
-            if(!hasEconomy) {
+            if(eco == null) {
                 Bukkit.getPluginManager().disablePlugin(plugin);
             }
         } else {
@@ -33,7 +32,7 @@ public final class Market extends JavaPlugin {
     @Override
     public void onEnable() {
         if(!setupEconomy()) {
-            hasEconomy = false;
+            hasChecked = true;
 
             for(JavaPlugin plugin : disable) {
                 getServer().getPluginManager().disablePlugin(plugin);
@@ -53,10 +52,12 @@ public final class Market extends JavaPlugin {
 
     private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> economy = getServer().getServicesManager().getRegistration(Economy.class);
-        if(economy != null) {
-            eco = economy.getProvider();
-            return true;
+
+        if(economy == null) {
+            return false;
         }
-        return false;
+
+        eco = economy.getProvider();
+        return true;
     }
 }
