@@ -1,0 +1,5 @@
+name: Market
+version: ${project.version}
+main: meowucme.market.Market
+api-version: 1.16
+depend: [Vault]
