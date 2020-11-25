@@ -22,7 +22,7 @@ import static meowucme.market.Market.eco;
 public class InventoryEvents implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if(event != null) {
+        if(true) {
             return;
         }
 
